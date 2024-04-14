@@ -20,16 +20,22 @@ defmodule AsyncTaskDemoWeb.TaskController do
   )
 
   def create(
-        %Plug.Conn{body_params: %TaskParams{type: type, priority: priority, data: data}} = conn,
+        %Plug.Conn{
+          body_params: %TaskParams{
+            type: type,
+            priority: priority,
+            data: data,
+            max_attempts: max_attempts
+          }
+        } = conn,
         _
       ) do
-    priority = (priority && String.to_existing_atom(priority)) || :normal
-
     with {:ok, task} <-
            AsyncTaskDemo.Tasks.create(%{
              type: type,
              priority: priority,
-             data: data
+             data: data,
+             max_attempts: max_attempts
            }) do
       conn
       |> put_status(:created)

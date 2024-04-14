@@ -30,6 +30,15 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Max concurrency limiting
+config :async_task_demo,
+  max_attempts: 5,
+  queues_concurrency: [
+    high: 10,
+    normal: 5,
+    low: 1
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
