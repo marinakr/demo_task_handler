@@ -5,6 +5,7 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
     test "creates task successfully with high priority", %{conn: conn} do
       payload =
         Jason.encode!(%{
+          max_attempts: 10,
           type: "finances",
           priority: "high",
           data: %{
@@ -15,6 +16,7 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
         })
 
       assert %{
+               "max_attempts" => 10,
                "data" => %{
                  "generate" => "report",
                  "sort" => "credit",
@@ -23,7 +25,6 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
                "id" => id,
                "priority" => "high",
                "type" => "finances",
-               "max_attempts" => 5,
                "state" => "new",
                "updated_at" => updated_at,
                "inserted_at" => inserted_at

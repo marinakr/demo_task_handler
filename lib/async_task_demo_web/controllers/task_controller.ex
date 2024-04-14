@@ -20,17 +20,22 @@ defmodule AsyncTaskDemoWeb.TaskController do
   )
 
   def create(
-        %Plug.Conn{body_params: %TaskParams{type: type, priority: priority, data: data}} = conn,
+        %Plug.Conn{
+          body_params: %TaskParams{
+            type: type,
+            priority: priority,
+            data: data,
+            max_attempts: max_attempts
+          }
+        } = conn,
         _
       ) do
-    # open_api_spex validates input, so &String.to_existing_atom/1 will not fail, enum defined
-    priority = priority && String.to_existing_atom(priority)
-
     with {:ok, task} <-
            AsyncTaskDemo.Tasks.create(%{
              type: type,
              priority: priority,
-             data: data
+             data: data,
+             max_attempts: max_attempts
            }) do
       conn
       |> put_status(:created)

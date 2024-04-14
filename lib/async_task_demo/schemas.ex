@@ -22,7 +22,6 @@ defmodule AsyncTaskDemo.Schemas do
       type: :integer,
       format: :int32,
       description: "number of times task executed if attempt to execute task fails",
-      default: 0,
       minimum: 0
     })
   end
@@ -45,7 +44,8 @@ defmodule AsyncTaskDemo.Schemas do
       title: "Task Priority",
       description: "Defines priority of task",
       type: :string,
-      enum: ["high", "normal", "low"]
+      enum: ["high", "normal", "low"],
+      default: "normal"
     })
   end
 
