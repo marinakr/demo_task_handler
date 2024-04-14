@@ -5,23 +5,48 @@ defmodule AsyncTaskDemo.Application do
 
   use Application
 
+  alias AsyncTaskDemo.Workers.LockManager
+  alias AsyncTaskDemo.Workers.Worker
+  alias AsyncTaskDemo.Workers.WorkerManager
+
+  @app :async_task_demo
+
   @impl true
   def start(_type, _args) do
-    children = [
-      AsyncTaskDemoWeb.Telemetry,
-      AsyncTaskDemo.Repo,
-      {DNSCluster, query: Application.get_env(:async_task_demo, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: AsyncTaskDemo.PubSub},
-      # Start a worker by calling: AsyncTaskDemo.Worker.start_link(arg)
-      # {AsyncTaskDemo.Worker, arg},
-      # Start to serve requests, typically the last entry
-      AsyncTaskDemoWeb.Endpoint
-    ]
+    children =
+      [
+        AsyncTaskDemoWeb.Telemetry,
+        AsyncTaskDemo.Repo,
+        {DNSCluster, query: Application.get_env(:async_task_demo, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: AsyncTaskDemo.PubSub},
+        AsyncTaskDemoWeb.Endpoint
+      ] ++ [LockManager, WorkerManager | taks_workers_pool()]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: AsyncTaskDemo.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  @priorities [:high, :normal, :low]
+  defp taks_workers_pool do
+    config_queues_concurrency = Application.get_env(@app, :queues_concurrency)
+    default_queues_concurrency = [high: 10, normal: 5, low: 1]
+
+    queues_concurrency =
+      default_queues_concurrency
+      |> Keyword.merge(config_queues_concurrency)
+      |> Keyword.take(@priorities)
+
+    Enum.reduce(queues_concurrency, [], fn {queue, workers_number}, children_spec ->
+      workers =
+        Enum.map(1..workers_number, fn number ->
+          %{
+            id: {queue, number, Worker},
+            start: {Worker, :start_link, [%{queue: queue, number: number}]}
+          }
+        end)
+
+      children_spec ++ workers
+    end)
   end
 
   # Tell Phoenix to update the endpoint configuration

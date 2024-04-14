@@ -23,7 +23,8 @@ defmodule AsyncTaskDemoWeb.TaskController do
         %Plug.Conn{body_params: %TaskParams{type: type, priority: priority, data: data}} = conn,
         _
       ) do
-    priority = (priority && String.to_existing_atom(priority)) || :normal
+    # open_api_spex validates input, so &String.to_existing_atom/1 will not fail, enum defined
+    priority = priority && String.to_existing_atom(priority)
 
     with {:ok, task} <-
            AsyncTaskDemo.Tasks.create(%{
