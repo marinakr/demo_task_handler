@@ -25,3 +25,12 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Max concurrency limiting
+config :async_task_demo,
+  environment: :test,
+  timeout_milliseconds: 10,
+  priority_queues: [
+    normal: 10,
+    low: 1
+  ]

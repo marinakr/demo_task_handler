@@ -5,6 +5,7 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
     test "creates task successfully with high priority", %{conn: conn} do
       payload =
         Jason.encode!(%{
+          max_attempts: 10,
           type: "finances",
           priority: "high",
           data: %{
@@ -15,16 +16,18 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
         })
 
       assert %{
+               "max_attempts" => 10,
                "data" => %{
                  "generate" => "report",
                  "sort" => "credit",
                  "timeline" => "quoter"
                },
                "id" => id,
-               "inserted_at" => inserted_at,
                "priority" => "high",
                "type" => "finances",
-               "updated_at" => updated_at
+               "state" => "new",
+               "updated_at" => updated_at,
+               "inserted_at" => inserted_at
              } =
                conn
                |> post(~p"/api/users", payload)
@@ -57,6 +60,8 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
                "inserted_at" => inserted_at,
                "priority" => "normal",
                "type" => "images",
+               "max_attempts" => 5,
+               "state" => "new",
                "updated_at" => updated_at
              } =
                conn
@@ -89,6 +94,8 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
                "inserted_at" => inserted_at,
                "priority" => "normal",
                "type" => "images",
+               "max_attempts" => 5,
+               "state" => "new",
                "updated_at" => updated_at
              } =
                conn
@@ -122,6 +129,8 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
                "inserted_at" => inserted_at,
                "priority" => "low",
                "type" => "student_homework",
+               "max_attempts" => 5,
+               "state" => "new",
                "updated_at" => updated_at
              } =
                conn
@@ -133,20 +142,75 @@ defmodule AsyncTaskDemoWeb.TaskControllerTest do
       assert updated_at
     end
 
-    test "returns propper error for invalid payload", %{conn: conn} do
-      payloads = [
-        %{},
-        %{type: "1234", priority: :unknown, data: ""},
-        %{priority: :unknown, type: "finances", data: %{id: 1}},
-        %{type: :low},
-        %{data: %{text: "Hello"}}
-      ]
+    test "returns propper error for max_attempts < 0", %{conn: conn} do
+      payload =
+        Jason.encode!(%{
+          type: "student_homework",
+          priority: "low",
+          data: %{},
+          max_attempts: -1
+        })
 
-      for payload <- payloads do
-        conn
-        |> post(~p"/api/users", payload)
-        |> json_response(422)
-      end
+      assert %{
+               "errors" => [
+                 %{
+                   "message" => "-1 is smaller than inclusive minimum 0",
+                   "source" => %{"pointer" => "/max_attempts"},
+                   "title" => "Invalid value"
+                 }
+               ]
+             } =
+               conn
+               |> post(~p"/api/users", payload)
+               |> json_response(422)
+    end
+
+    test "returns propper error when type is not defined", %{conn: conn} do
+      assert %{
+               "errors" => [
+                 %{
+                   "message" => "Missing field: type",
+                   "source" => %{"pointer" => "/type"},
+                   "title" => "Invalid value"
+                 }
+               ]
+             } =
+               conn
+               |> post(~p"/api/users", Jason.encode!(%{data: %{text: "Hello"}}))
+               |> json_response(422)
+    end
+
+    test "returns propper error when data is not defined", %{conn: conn} do
+      assert %{
+               "errors" => [
+                 %{
+                   "message" => "Missing field: data",
+                   "source" => %{"pointer" => "/data"},
+                   "title" => "Invalid value"
+                 }
+               ]
+             } =
+               conn
+               |> post(~p"/api/users", Jason.encode!(%{type: :low}))
+               |> json_response(422)
+    end
+
+    test "returns propper error when priority value is invalid", %{conn: conn} do
+      assert %{
+               "errors" => [
+                 %{
+                   "message" => "Invalid value for enum",
+                   "source" => %{"pointer" => "/priority"},
+                   "title" => "Invalid value"
+                 }
+               ]
+             } =
+               conn
+               |> post(
+                 ~p"/api/users",
+                 Jason.encode!(%{priority: :unknown, type: "finances", data: %{id: 1}})
+               )
+               |> json_response(422)
     end
   end
 end
