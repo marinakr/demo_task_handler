@@ -16,6 +16,10 @@ $ curl http://localhost:4000/api/openapi | jq
 Task type, priority, max attempts and data to execute task can be defined in payload
 Check required and optional parameters with open api specification
 
+```
+url -X POST http://localhost:4000/api/users -H "Content-Type: application/json" -d '{"max_attempts": 10, "type": "finances", "priority": "high", "data": {}}'
+```
+
 **Storage**
 
 Postgres is used a a persistent storage for tasks 
@@ -73,6 +77,16 @@ INSERT 0 1000000
 In another console tab, run
 ```
 mix phx.server
+```
+
+Check code specifications (credo, dialyxir):
+```
+mix quality
+```
+
+Test coverage
+```
+MIX_ENV=test mix coveralls
 ```
 
 ## Learn more

@@ -88,7 +88,6 @@ defmodule AsyncTaskDemo.Workers.Worker do
       |> where([t], t.state == :new)
       |> where([t], t.priority == ^priority)
       |> where([t], t.attempt == 0 or t.updated_at < ago(@timeout_milliseconds, "millisecond"))
-      |> order_by([t], [t.attempt, t.updated_at])
       |> limit(1)
       |> lock("FOR UPDATE")
       |> Repo.one()

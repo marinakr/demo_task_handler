@@ -58,7 +58,6 @@ defmodule AsyncTaskDemo.Workers.WorkerTest do
   describe "get_task_to_execute/0" do
     test "returns task to execute, order by priority" do
       for priority <- AsyncTaskDemo.Tasks.priorities() do
-        insert(:task, priority: priority, attempt: 2)
         %{id: id} = insert(:task, priority: priority)
 
         assert {:ok, %Task{id: ^id}} = Worker.get_task_to_execute(priority)
@@ -87,8 +86,6 @@ defmodule AsyncTaskDemo.Workers.WorkerTest do
 
     test "returns task to execute, respects updated_at and priority in order_by for failed tasks" do
       for priority <- AsyncTaskDemo.Tasks.priorities() do
-        insert(:task, priority: priority, attempt: 2)
-
         %{id: id} =
           insert(:task,
             priority: priority,

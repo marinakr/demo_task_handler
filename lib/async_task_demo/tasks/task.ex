@@ -17,7 +17,7 @@ defmodule AsyncTaskDemo.Tasks.Task do
     field :data, :map
 
     field :state, Ecto.Enum, values: [:new, :executing, :completed, :failed]
-    field :attempt, :integer
+    field :attempt, :integer, default: 0
     field :max_attempts, :integer
 
     timestamps()
