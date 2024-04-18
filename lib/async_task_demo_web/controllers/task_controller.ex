@@ -19,24 +19,11 @@ defmodule AsyncTaskDemoWeb.TaskController do
     }
   )
 
-  def create(
-        %Plug.Conn{
-          body_params: %TaskParams{
-            type: type,
-            priority: priority,
-            data: data,
-            max_attempts: max_attempts
-          }
-        } = conn,
-        _
-      ) do
-    with {:ok, task} <-
-           AsyncTaskDemo.Tasks.create(%{
-             type: type,
-             priority: priority,
-             data: data,
-             max_attempts: max_attempts
-           }) do
+  def create(%Plug.Conn{body_params: body_params} = conn, _) do
+    # body_params is request body params validated and casted to TaskParams schema
+    attrs = Map.take(body_params, ~w(type priority data max_attempts)a)
+
+    with {:ok, task} <- AsyncTaskDemo.Tasks.create(attrs) do
       conn
       |> put_status(:created)
       |> json(task)

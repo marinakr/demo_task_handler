@@ -8,7 +8,7 @@ config :async_task_demo, AsyncTaskDemo.Repo,
   database: "async_task_demo_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 20
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -54,6 +54,7 @@ config :async_task_demo, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
+config :logger, level: :info
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

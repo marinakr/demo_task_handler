@@ -33,7 +33,7 @@ defmodule AsyncTaskDemo.Schemas do
       title: "State of task",
       description: "Show on whant execution state task is now",
       type: :string,
-      enum: ["new", "executing", "executed", "failed"]
+      enum: ["new", "executing", "completed", "failed"]
     })
   end
 

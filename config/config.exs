@@ -25,7 +25,16 @@ config :async_task_demo, AsyncTaskDemoWeb.Endpoint,
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [
+    :request_id,
+    :queue,
+    :worker_name,
+    :task_id,
+    :task_type,
+    :task_priority,
+    :task_attempt,
+    :error
+  ]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
@@ -33,7 +42,8 @@ config :phoenix, :json_library, Jason
 # Max concurrency limiting
 config :async_task_demo,
   max_attempts: 5,
-  queues_concurrency: [
+  timeout_milliseconds: 1000,
+  priority_queues: [
     high: 10,
     normal: 5,
     low: 1

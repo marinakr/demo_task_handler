@@ -9,7 +9,15 @@ defmodule AsyncTaskDemo.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.cobertura": :test
+      ]
     ]
   end
 
@@ -19,6 +27,7 @@ defmodule AsyncTaskDemo.MixProject do
   def application do
     [
       mod: {AsyncTaskDemo.Application, []},
+      start_phases: [check_tasks: []],
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -41,8 +50,17 @@ defmodule AsyncTaskDemo.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
+      {:httpoison, "~> 1.8.2"},
       # API documentation
-      {:open_api_spex, "~> 3.18"}
+      {:open_api_spex, "~> 3.18"},
+      # testing
+      {:ex_machina, "~> 2.7.0", only: :test},
+      {:mimic, "~> 1.7", only: :test},
+      {:excoveralls, "~> 0.18", only: :test},
+      # code convensions
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.7", only: [:dev, :test], runtime: false}
     ]
   end
 
@@ -57,7 +75,14 @@ defmodule AsyncTaskDemo.MixProject do
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      quality: [
+        "compile --all-warnings --warnings-as-errors",
+        "format --check-formatted",
+        "credo --strict",
+        "sobelow --verbose",
+        "dialyzer --ignore-exit-status"
+      ]
     ]
   end
 end
